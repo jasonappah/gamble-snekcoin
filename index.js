@@ -25,14 +25,50 @@ const api = axios.create({ baseURL: 'https://ankbot.net/api/' })
         const reply = t => sendMessage(channel, t, ts)
 
         if (words[0] !== ANK_AT_CODE) 
-            return reply('Start it with `@ank` to interact with the Ank interface!')
+            return reply('Type `@gmbl` and an amount of SnekCoin to gamble to start your slow descent into homelessness and depression.')
 
-        const command = words[1].toLowerCase()
-        if (!command) 
-            return reply('Specify the command!')
-
+        const command = words[1]
+        
+        const payerBalance = (await api.get(`balance?id=${user}`)).data.value
+        
+        if (!isNumber(command))
+            return reply('Um, that\'s not a number.')
+        
+        if (payerBalance < command)
+            return reply('You can\'t gamble more SnekCoin than you have, you thief!')
+        
+        random = Math.random()
+        
+        if (gainLoss())
+            // If you are gaining money
+            amount = random * command
+            await api.post('transfer', {
+                        payer: user,
+                        receiver: ANK_AT_CODE,
+                        amount,
+                        key: process.env.ANK_API_KEY
+                    })
+            msg = 'You gained ' + amount + ' SnekCoins!'
+            return reply(msg)
+        else
+            // you're losing money
+            amount = random * command * -1
+            await api.post('transfer', {
+                        payer: user,
+                        receiver: ANK_AT_CODE,
+                        amount,
+                        key: process.env.ANK_API_KEY
+                    })
+            if (payerBalance == amount)
+                msg = 'You lost it all. Tough.'
+            else
+                msg = 'You lost ' + amount + ' SnekCoins. Tough.'
+            return reply(msg)
+        
+ 
+        
         switch (command) {
-            case 'balance': {
+            case 'gamble': {
                 let userToGetBalance
                 if (words[2]) {
                   userToGetBalance = words[2]
@@ -187,6 +223,12 @@ function isHandle(handle) {
     return handle.match(/<@.*>/) !== null
 }
 
+function isNumber(str) {
+          if (typeof str != "string") return false // we only process strings!
+          // could also coerce to string: str = ""+str
+          return !isNaN(str) && !isNaN(parseFloat(str))
+}
+
 function handleToId(handle) {
     return handle.substring(2, handle.length - 1)
 }
@@ -209,6 +251,14 @@ function sendMessage(channel, text, thread_ts = null, blocks = null) {
         rej(error)
       }
     })
+}
+
+function gainLoss() {
+    // Returns true if you are gaining money, returns false if you are losing it.
+    x = Math.floor(Math.random() * 2);
+    if (x < 0.5)
+        return False
+    return True
 }
 
 function getInfo(user) {
