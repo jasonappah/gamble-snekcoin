@@ -29,9 +29,11 @@ const api = axios.create({ baseURL: "https://ankbot.net/api/" });
 
         if (words[0] == THIS_AT_CODE && user != ANK_AT_CODE) {
             if (words.length == 1 || words.length > 2) {
-                return reply(
-                    "Type `@gmbl` and an amount of SnekCoin to gamble and start your slow descent into homelessness and depression."
-                );
+                // return reply(
+                //     "Type `@gmbl` and an amount of SnekCoin to gamble and start your slow descent into homelessness and depression."
+                // );
+
+
             }
 
             const command = words[1];
@@ -56,16 +58,16 @@ const api = axios.create({ baseURL: "https://ankbot.net/api/" });
                     amount = botBalance;
                     const msg = `You gained ${botBalance} SnekCoin! You could've had more but I'm running a little low on SnekCoin myself, so maybe you'd consider donating?`;
                     await api.post("transfer", {
-                        payer: user,
-                        receiver: THIS_AT_CODE2,
+                        payer: THIS_AT_CODE2,
+                        receiver: user,
                         amount,
                         key: process.env.ANK_API_KEY
                     });
                     return reply(msg);
                 } else {
                     await api.post("transfer", {
-                        payer: user,
-                        receiver: THIS_AT_CODE2,
+                        payer: THIS_AT_CODE2,
+                        receiver: user,
                         amount,
                         key: process.env.ANK_API_KEY
                     });
